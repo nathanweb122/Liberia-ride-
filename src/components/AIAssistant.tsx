@@ -23,6 +23,164 @@ const QUICK_PROMPTS = [
   { text: "What is the compliance hub/dashboard?", icon: ClipboardCheck },
 ];
 
+// Offline & fallback concierge knowledge engine to guarantee 100% response uptime
+function getClientFallbackConciergeReply(userMessage: string): string {
+  const msg = (userMessage || '').toLowerCase();
+
+  if (
+    msg.includes('book') ||
+    msg.includes('ride') ||
+    msg.includes('fleet') ||
+    msg.includes('vehicle') ||
+    msg.includes('taxi') ||
+    msg.includes('kekeh') ||
+    msg.includes('bike') ||
+    msg.includes('car') ||
+    msg.includes('order')
+  ) {
+    return `### How to Book a Premium Ride with Obsidian 🚗
+
+To book an elite ride with the Liberia Ride Elite fleet, please follow these simple steps:
+
+1. **Access the Portal**: Click the golden **"Dashboard"** or **"Client Portal"** button in the top navigation bar.
+2. **Choose your Class**: In the **"Fleet Discovery"** section, discover our premium options:
+   - **Mercedes S-Class (Luxury Taxi)**: Operated by Captain Voss (plates 44-OB-21), presenting ultimate executive prestige.
+   - **Luxury Bike Express**: Operated by Marcus Thorne (plates 77-BR-902), perfect for overtaking central Monrovia traffic.
+   - **Kekeh Executive**: Operated by Helena Kesselly (plates 12-KK-442), embodying open-air elegance.
+   - **VIP Delivery**: Secure dispatch of high-value cargo and confidential packages.
+3. **Set your Route**: Specify your high-class pickup spot (e.g. Royal Grand Hotel, Mamba Point, or Farmington Airport) and destination.
+4. **Acquire Live Progress**: Confirm the dispatch. Your select chauffeur will receive the request instantly, appearing live on your route tracker!`;
+  }
+
+  if (
+    msg.includes('pay') ||
+    msg.includes('momo') ||
+    msg.includes('orange') ||
+    msg.includes('mtn') ||
+    msg.includes('money') ||
+    msg.includes('billing') ||
+    msg.includes('transact') ||
+    msg.includes('cost') ||
+    msg.includes('fare') ||
+    msg.includes('rate') ||
+    msg.includes('price')
+  ) {
+    return `### Performing Secure Mobile Money Transactions with MoMo Pay 💰
+
+Obsidian integrates directly with Liberia's premier payment providers: **MTN Mobile Money (MoMo)** and **Orange Money**.
+
+1. **Locate Payment Hub**: In the main Client Portal, choose the **"Momo Pay"** or **"Mobile Money Hub"** tab.
+2. **Configure Provider**: Select your active service network (MTN MoMo or Orange Money) and enter your contact billing number (+231...).
+3. **Execute Authorization**: Specify the amount in USD or LRD (we automatically support dual-currency transactions with real-time conversion) and click **"Process Mobile Payment"**.
+4. **Approve Transaction**: Consent to the instant validation push on your phone to finalize your booking balance. All transactions sync to our ledger.`;
+  }
+
+  if (
+    msg.includes('track') ||
+    msg.includes('map') ||
+    msg.includes('live') ||
+    msg.includes('gps') ||
+    msg.includes('route') ||
+    msg.includes('moving') ||
+    msg.includes('move') ||
+    msg.includes('location')
+  ) {
+    return `### Tracking Chauffeurs Live with Route Intelligence 🗺️
+
+Our custom Monrovia operational map features live GPS tracking:
+
+1. **Activate a Ride**: When your booking is dispatch-approved, navigate to the **"Trip Status"** tab.
+2. **Simulate/Track live**: Watch your vehicle travel smoothly in real-time between pickup spots and destinations across Sinkor and Mamba Point.
+3. **Radial Pulse Ring**: The driver's marker is enhanced with an active radar pulse, ensuring high visual clarity of your active trip status.`;
+  }
+
+  if (
+    msg.includes('create') ||
+    msg.includes('register') ||
+    msg.includes('account') ||
+    msg.includes('sign up') ||
+    msg.includes('login') ||
+    msg.includes('sign in') ||
+    msg.includes('auth') ||
+    msg.includes('join') ||
+    msg.includes('driver') ||
+    msg.includes('chauffeur')
+  ) {
+    return `### Creating and Managing Your Account 🔑
+
+Creating a premium client or fleet partner account is effortless:
+
+1. **Client Registration**:
+   - Access the top-right **"Dashboard"** button. If you are not authenticated, our **Elite Auth Portal** will appear.
+   - Enter your email, establish a secure password, and instantiate your account instantly.
+2. **Fleet Partner specializations (Chauffeurs / Riders)**:
+   - Expand the **"Join Fleet"** menu in the top navigation panel.
+   - Select your operational division: **Bike & Kekeh Rider**, **Luxury Chauffeur**, or **Logistics Partner**.
+   - Input your credentials and register to log into your dedicated telemetry workspace!`;
+  }
+
+  if (
+    msg.includes('contact') ||
+    msg.includes('ceo') ||
+    msg.includes('collins') ||
+    msg.includes('howe') ||
+    msg.includes('manager') ||
+    msg.includes('tech') ||
+    msg.includes('phone') ||
+    msg.includes('call') ||
+    msg.includes('whatsapp') ||
+    msg.includes('support') ||
+    msg.includes('number')
+  ) {
+    return `### Executive Contact & WhatsApp Support 📞
+
+You can reach our leadership and engineering management directly via WhatsApp or phone:
+
+1. **CEO — Mr. Collins**:
+   - **Phone / WhatsApp**: [+231 77 029 1424](https://wa.me/231770291424)
+   - **Email**: collins.ceo@liberiaride.lr
+   - **Role**: Executive Partnerships, VIP Inquiries & Operations
+
+2. **Technical Manager — Mr. Howe**:
+   - **Phone / WhatsApp**: [+250 79 656 9416](https://wa.me/250796569416)
+   - **Email**: howe.tech@liberiaride.lr
+   - **Role**: System Architecture, App Infrastructure & Fleet Tech
+
+You can also navigate to the **"Contact Us"** page in our navigation menu to submit an instant direct inquiry or use our live chat!`;
+  }
+
+  if (
+    msg.includes('compliance') ||
+    msg.includes('admin') ||
+    msg.includes('sheet') ||
+    msg.includes('dashboard') ||
+    msg.includes('sheets') ||
+    msg.includes('cert') ||
+    msg.includes('kyc') ||
+    msg.includes('revenue') ||
+    msg.includes('growth')
+  ) {
+    return `### Corporate Compliance Hub & Bookkeeping Sync 📊
+
+Liberia Ride Elite operates with the absolute highest tier of operational standards:
+
+1. **Google Sheets Sync**: Bookings and financial audits are streamed programmatically to secure spreadsheets, guaranteeing seamless enterprise bookkeeping.
+2. **Admin Portal**: Accessible on the landing page, allowing dispatch compliance personnel to perform KYC reviews, auditing active booking lists, and analyze dual-currency revenue curves through Recharts dashboards.`;
+  }
+
+  return `### Welcome to Obsidian Concierge 🌸
+
+I am your elite AI Concierge, dedicated to helping you master the Liberia Ride Elite platform in Monrovia. 
+
+Here are some helpful inquiries you can explore:
+- **"How to book a premium ride?"** - Step-by-step instructions on ride scheduling.
+- **"How does Mobile Money (MTN MoMo/Orange) billing work?"** - Discover payment security.
+- **"How do I create a client or driver account?"** - Join as a VIP member or join our fleet.
+- **"How does real-time Map tracking work?"** - Learn about our animated route trackers.
+
+To coordinate immediately, you can also log in to your **Dashboard** or register via the **Join Fleet** menu!`;
+}
+
 export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigate, isLoggedIn, currentUser }) => {
   const isVip = isLoggedIn && (
     currentUser?.clientTier === 'VIP' || 
@@ -55,6 +213,9 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ onNavigate, isLoggedIn
   const [liveVoiceVoice, setLiveVoiceVoice] = useState('Kore');
   const [isVoiceMenuOpen, setIsVoiceMenuOpen] = useState(false);
   const [isMicMuted, setIsMicMuted] = useState(false);
+  const [voiceTranscript, setVoiceTranscript] = useState('');
+  const [isVoiceThinking, setIsVoiceThinking] = useState(false);
+  const recognitionRef = useRef<any>(null);
 
   // Set default active tab depending on VIP tier
   useEffect(() => {

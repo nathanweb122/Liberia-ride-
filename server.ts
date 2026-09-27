@@ -21,11 +21,16 @@ async function startServer() {
 
   // Lazy initialize the Gemini AI Client safely on the server side
   function getGeminiClient(): GoogleGenAI {
-    const key = process.env.GEMINI_API_KEY;
+    const key = process.env.GEMINI_API_KEY || process.env.NETLIFY_AI_GATEWAY_KEY;
     if (!key) {
-      throw new Error("GEMINI_API_KEY environment variable is required");
+      throw new Error("GEMINI_API_KEY or NETLIFY_AI_GATEWAY_KEY environment variable is required");
     }
-    return new GoogleGenAI({ apiKey: key });
+    const baseUrl = process.env.GOOGLE_GEMINI_BASE_URL || process.env.NETLIFY_AI_GATEWAY_BASE_URL;
+    const options: any = { apiKey: key };
+    if (baseUrl) {
+      options.httpOptions = { baseUrl: baseUrl.replace(/\/$/, '') };
+    }
+    return new GoogleGenAI(options);
   }
 
   // Elite rule-based conversational fallback concierge when API Key is pending configuration
@@ -165,7 +170,8 @@ Tone and style rules:
         return res.status(400).json({ error: "Message is required" });
       }
 
-      if (!process.env.GEMINI_API_KEY) {
+      const hasKey = !!(process.env.GEMINI_API_KEY || process.env.NETLIFY_AI_GATEWAY_KEY);
+      if (!hasKey) {
         // Safe, smart conversational fallback if no API key is specified yet.
         const reply = getFallbackConciergeReply(message);
         return res.json({
@@ -195,54 +201,37 @@ Tone and style rules:
 
       // Call Gemini standard generateContent for rapid, premium conversational responses
       let reply = "";
+      const modelsToTry = ["gemini-2.5-flash", "gemini-3-flash-preview", "gemini-3.7-flash"];
 
       try {
         const ai = getGeminiClient();
-        const response = await ai.models.generateContent({
-          model: "gemini-3.7-flash",
-          contents: contents,
-          config: {
-            systemInstruction: systemInstruction,
-            temperature: 0.7,
+        for (const model of modelsToTry) {
+          try {
+            const response = await ai.models.generateContent({
+              model,
+              contents: contents,
+              config: {
+                systemInstruction: systemInstruction,
+                temperature: 0.7,
+              }
+            });
+            if (response.text) {
+              reply = response.text;
+              break;
+            }
+          } catch (mErr: any) {
+            console.warn(`Local dev server: model ${model} attempt failed:`, mErr?.message || mErr);
           }
-        });
-        reply = response.text || "I am here to guide you with any services in Liberia.";
+        }
+        if (!reply) {
+          reply = getFallbackConciergeReply(message);
+        }
       } catch (geminiErr: any) {
         console.warn("Gemini generateContent in fallback mode:", geminiErr?.message || geminiErr);
         reply = getFallbackConciergeReply(message);
       }
 
-      // Generate voice audio response
-      let audioBase64: string | undefined;
-      const cleanSpeechText = cleanTextForSpeech(reply);
-      if (cleanSpeechText && process.env.GEMINI_API_KEY) {
-        try {
-          const voiceName = (req.body.voice && ["Puck", "Charon", "Kore", "Fenrir", "Zephyr"].includes(req.body.voice))
-            ? req.body.voice
-            : "Kore";
-
-          const ai = getGeminiClient();
-          const ttsResponse = await ai.models.generateContent({
-            model: "gemini-3.1-flash-tts-preview",
-            contents: `Say this completely naturally with a warm, friendly, and elegant conversational voice of a professional black woman from Monrovia, Liberia. Use natural pacing, contractions, and beautiful warmth: ${cleanSpeechText.substring(0, 1000)}`,
-            config: {
-              responseModalities: ["AUDIO"],
-              speechConfig: {
-                voiceConfig: {
-                  prebuiltVoiceConfig: { voiceName }
-                }
-              }
-            }
-          });
-          
-          audioBase64 = ttsResponse.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-        } catch (ttsErr: any) {
-          // Graceful fallback to client Web Speech synthesis
-          console.warn("TTS synthesis note (using browser voice synthesis):", ttsErr?.message || ttsErr);
-        }
-      }
-
-      res.json({ reply, audio: audioBase64, success: true });
+      res.json({ reply, success: true });
 
     } catch (error: any) {
       console.error("AI Assistant error:", error);
