@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Driver Dispatch Portal</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 40px 20px; background: #121212; color: white; margin: 0; }
+    .card { max-width: 480px; margin: 0 auto; background: #1b1f24; padding: 30px 20px; border-radius: 16px; border: 1px solid #333; box-shadow: 0 8px 24px rgba(0,0,0,0.6); }
+    .btn { padding: 14px 28px; font-size: 16px; color: white; border: none; border-radius: 8px; cursor: pointer; margin: 8px; font-weight: bold; width: calc(100% - 16px); max-width: 320px; transition: transform 0.1s; }
+    .btn:active { transform: scale(0.98); }
+    .start { background: #28a745; }
+    .stop { background: #dc3545; }
+    .sim { background: #007bff; }
+    #status { margin-top: 20px; font-weight: bold; font-family: monospace; font-size: 14px; color: #ffc107; padding: 10px; background: #0d1117; border-radius: 8px; border: 1px solid #222; }
+    .links { margin-top: 25px; }
+    .links a { color: #e9c349; text-decoration: none; font-size: 13px; margin: 0 10px; }
+    .links a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2 style="margin-top:0; letter-spacing: 0.05em; text-transform: uppercase;">Driver Dispatch Panel</h2>
+    <p style="color: #888; font-size: 13px; margin-bottom: 24px;">Trip ID: <span style="color:#00e5ff; font-family:monospace;">trip_liberia_101</span></p>
+
+    <button id="toggleBtn" class="btn start" onclick="toggleTracking()">Start Real Device GPS</button>
+    <br/>
+    <button id="simBtn" class="btn sim" onclick="toggleSimulatedDrive()">Simulate Monrovia Drive</button>
+
+    <p id="status">Status: Offline</p>
+
+    <div class="links">
+      <a href="/client.html" target="_blank">Open Client Map View ↗</a>
+      <a href="/">Back to Main App</a>
+    </div>
+  </div>
+
+  <script>
+    const socket = io();
+    let watchId = null;
+    let simInterval = null;
+    let isTracking = false;
+    let isSimulating = false;
+
+    const DRIVER_ID = "driver_01";
+    const ACTIVE_TRIP_ID = "trip_liberia_101";
+
+    // Real Hardware GPS
+    function toggleTracking() {
+      if (isSimulating) stopSimulatedDrive();
+
+      if (!isTracking) {
+        if ("geolocation" in navigator) {
+          watchId = navigator.geolocation.watchPosition(
+            (pos) => {
+              const { latitude, longitude, heading } = pos.coords;
+              emitLocation(latitude, longitude, heading || 0);
+              document.getElementById("status").innerText = `Broadcasting GPS: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+            },
+            (err) => { document.getElementById("status").innerText = "GPS Error: " + err.message; },
+            { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+          );
+          isTracking = true;
+          document.getElementById("toggleBtn").innerText = "End Trip";
+          document.getElementById("toggleBtn").className = "btn stop";
+        } else {
+          document.getElementById("status").innerText = "Geolocation not supported";
+        }
+      } else {
+        if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+        isTracking = false;
+        document.getElementById("toggleBtn").innerText = "Start Real Device GPS";
+        document.getElementById("toggleBtn").className = "btn start";
+        document.getElementById("status").innerText = "Status: Offline";
+      }
+    }
+
+    // Simulated Driving inside Monrovia (For testing outside Liberia, e.g. Rwanda)
+    function toggleSimulatedDrive() {
+      if (isTracking) toggleTracking();
+
+      if (!isSimulating) {
+        let currentLat = 6.3156;
+        let currentLng = -10.8074;
+
+        isSimulating = true;
+        document.getElementById("simBtn").innerText = "Stop Simulation";
+        document.getElementById("simBtn").className = "btn stop";
+
+        simInterval = setInterval(() => {
+          currentLat += 0.00015;
+          currentLng += 0.00020;
+
+          emitLocation(currentLat, currentLng, 45);
+          document.getElementById("status").innerText = `Simulating Monrovia Trip: ${currentLat.toFixed(5)}, ${currentLng.toFixed(5)}`;
+        }, 3000);
+      } else {
+        stopSimulatedDrive();
+      }
+    }
+
+    function stopSimulatedDrive() {
+      if (simInterval) clearInterval(simInterval);
+      simInterval = null;
+      isSimulating = false;
+      document.getElementById("simBtn").innerText = "Simulate Monrovia Drive";
+      document.getElementById("simBtn").className = "btn sim";
+      document.getElementById("status").innerText = "Status: Offline";
+    }
+
+    function emitLocation(lat, lng, heading) {
+      socket.emit("driverLocationUpdate", {
+        driverId: DRIVER_ID,
+        tripId: ACTIVE_TRIP_ID,
+        lat,
+        lng,
+        heading
+      });
+    }
+  </script>
+</body>
+</html>

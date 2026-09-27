@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Client Map View - Monrovia Tracking</title>
+
+  <!-- Leaflet CSS & JS (Free, No Key) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Free Address Search Control (Nominatim - No Key) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+  <!-- Socket.io -->
+  <script src="/socket.io/socket.io.js"></script>
+
+  <style>
+    body { margin: 0; padding: 0; font-family: sans-serif; background: #121212; }
+    #map { height: 100vh; width: 100vw; }
+
+    /* CSS Dark-Mode Transformation for Pure OpenStreetMap Tiles */
+    .dark-tiles .leaflet-tile-container img {
+      filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+    }
+
+    .info-card {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.1);
+      max-width: 320px;
+    }
+
+    .nav-bar {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      z-index: 1000;
+      display: flex;
+      gap: 10px;
+    }
+
+    .nav-btn {
+      background: #e9c349;
+      color: #0c0f0f;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      text-decoration: none;
+      font-size: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="nav-bar">
+    <a href="/driver.html" target="_blank" class="nav-btn">Open Driver GPS Portal ↗</a>
+    <a href="/" class="nav-btn" style="background:#222; color:#fff; border:1px solid #444;">Back to App</a>
+  </div>
+
+  <div id="map"></div>
+  <div class="info-card" id="infoCard">Click map or search to select destination</div>
+
+  <script>
+    const socket = io();
+    const ACTIVE_TRIP_ID = "trip_liberia_101"; 
+
+    // Explicit Monrovia land coordinates (Broad Street / Sinkor)
+    const MONROVIA_LAND_CENTER = [6.3156, -10.8074];
+
+    // 1. Initialize Map centered on Monrovia
+    const map = L.map('map', { className: 'dark-tiles' }).setView(MONROVIA_LAND_CENTER, 14);
+
+    // 2. OpenStreetMap Layer (Free, No Keys Required)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // 3. Free Location Search Control
+    const geocoder = L.Control.geocoder({ defaultMarkGeocode: false })
+      .on('markgeocode', function(e) {
+        const latlng = e.geocode.center;
+        setDestinationPin(latlng.lat, latlng.lng, e.geocode.name);
+        map.setView(latlng, 16);
+      })
+      .addTo(map);
+
+    // 4. Pin-Dropping Logic
+    let pinMarker = null;
+
+    map.on('click', function(e) {
+      setDestinationPin(e.latlng.lat, e.latlng.lng);
+    });
+
+    function setDestinationPin(lat, lng, label = "") {
+      if (!pinMarker) {
+        pinMarker = L.marker([lat, lng], { draggable: true }).addTo(map);
+        pinMarker.on('dragend', (evt) => {
+          const pos = evt.target.getLatLng();
+          updateCard(pos.lat, pos.lng);
+        });
+      } else {
+        pinMarker.setLatLng([lat, lng]);
+      }
+      updateCard(lat, lng, label);
+    }
+
+    function updateCard(lat, lng, label = "") {
+      document.getElementById('infoCard').innerText = label 
+        ? `${label} (${lat.toFixed(4)}, ${lng.toFixed(4)})`
+        : `Destination: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    }
+
+    // 5. Driver Tracking Engine (Filters out 0,0 ocean coordinates)
+    let driverMarker = null;
+    const carIcon = L.icon({
+      iconUrl: 'https://cdn-icons-png.flaticon.com/512/3202/3202027.png',
+      iconSize: [36, 36],
+      iconAnchor: [18, 18]
+    });
+
+    socket.emit('joinTrip', ACTIVE_TRIP_ID);
+
+    socket.on(`location_update_${ACTIVE_TRIP_ID}`, (data) => {
+      let { lat, lng } = data;
+
+      // Ignore 0,0 ocean coordinates or missing values
+      if (!lat || !lng || (lat === 0 && lng === 0) || isNaN(lat) || isNaN(lng)) {
+        lat = MONROVIA_LAND_CENTER[0];
+        lng = MONROVIA_LAND_CENTER[1];
+      }
+
+      const newPos = new L.LatLng(lat, lng);
+
+      if (!driverMarker) {
+        driverMarker = L.marker(newPos, { icon: carIcon }).addTo(map);
+        map.setView(newPos, 16);
+      } else {
+        driverMarker.setLatLng(newPos);
+        map.panTo(newPos);
+      }
+    });
+  </script>
+</body>
+</html>

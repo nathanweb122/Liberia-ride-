@@ -1,0 +1,222 @@
+{
+  "entities": {
+    "Driver": {
+      "title": "Driver Profile",
+      "description": "Real-time state and profile of a chauffeur or rider",
+      "type": "object",
+      "properties": {
+         "id": {
+           "type": "string",
+           "description": "The unique identifier of the driver"
+         },
+         "name": {
+           "type": "string",
+           "description": "The name of the driver or rider"
+         },
+         "role": {
+           "type": "string",
+           "enum": ["Chauffeur", "Rider"],
+           "description": "Role of the partner"
+         },
+         "phone": {
+           "type": "string",
+           "description": "Hotline / call number"
+         },
+         "rating": {
+           "type": "string",
+           "description": "Driver's rating"
+         },
+         "status": {
+           "type": "string",
+           "enum": ["Available", "Unavailable", "On Trip"],
+           "description": "Active state"
+         },
+         "vehicle": {
+           "type": "string",
+           "description": "Active vehicle/vessel name"
+         },
+         "plate": {
+           "type": "string",
+           "description": "License plate number"
+         },
+         "avatar": {
+           "type": "string",
+           "description": "Base64 or URL profile picture"
+         },
+         "earnings": {
+           "type": "number",
+           "description": "Chauffeur/rider's custom or completed ride earnings"
+         },
+         "commissionPaid": {
+           "type": "number",
+           "description": "Verified 10% commission payments made so far"
+         },
+         "accountStatus": {
+           "type": "string",
+           "enum": ["active", "hold", "suspended"],
+           "description": "Current status of the driver/rider account under website compliance policies"
+         },
+         "updatedAt": {
+           "type": "string",
+           "format": "date-time",
+           "description": "Last updated timestamp"
+         }
+      },
+      "required": ["id", "name", "role", "status"]
+    },
+    "Payment": {
+      "title": "Payment Compliance Submission",
+      "description": "A payment submission by a driver reporting 10% commission sent via MTN Liberia MoMo",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique payment submission registry ID"
+        },
+        "driverId": {
+          "type": "string",
+          "description": "The unique identifier of the submitting driver or rider"
+        },
+        "driverName": {
+          "type": "string",
+          "description": "Name of the partner"
+        },
+        "driverRole": {
+          "type": "string",
+          "description": "Chauffeur/Rider category"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Mobile Money amount transferred"
+        },
+        "currency": {
+          "type": "string",
+          "description": "Payer selected currency (USD/LRD)"
+        },
+        "referenceCode": {
+          "type": "string",
+          "description": "MTN Liberia MoMo Transaction Reference/ID number"
+        },
+        "payerPhone": {
+          "type": "string",
+          "description": "Sender phone number that sent the money"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"],
+          "description": "Validation status reviewed by the platform owner/admin"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Compliance notes from admin (e.g., feedback or rejection explanation)"
+        },
+        "submittedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date paper trail was generated"
+        }
+      },
+      "required": ["id", "driverId", "amount", "referenceCode", "payerPhone", "status"]
+    },
+    "ActiveTrip": {
+      "title": "Active Shared Ride Trip",
+      "description": "Coordinates and status of the current active shared direct dispatch trip",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["ready", "transit", "completed"],
+          "description": "Active state of the current trip"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Whether the trip is active"
+        },
+        "elapsedTime": {
+          "type": "number",
+          "description": "Total elapsed seconds"
+        },
+        "clientName": {
+          "type": "string",
+          "description": "Name of the client requesting dispatch"
+        },
+        "pickup": {
+          "type": "string",
+          "description": "Human-readable pickup name"
+        },
+        "pickupLat": {
+          "type": "number",
+          "description": "Latitude coordinate of pickup location"
+        },
+        "pickupLng": {
+          "type": "number",
+          "description": "Longitude coordinate of pickup location"
+        },
+        "destination": {
+          "type": "string",
+          "description": "Human-readable destination name"
+        },
+        "destinationLat": {
+          "type": "number",
+          "description": "Latitude coordinate of destination location"
+        },
+        "destinationLng": {
+          "type": "number",
+          "description": "Longitude coordinate of destination location"
+        },
+        "vehicleId": {
+          "type": "string",
+          "description": "Id of selection vehicle class"
+        },
+        "accepted": {
+          "type": "boolean",
+          "description": "Whether a Chauffeur has accepted the dispatch"
+        },
+        "acceptedBy": {
+          "type": ["string", "null"],
+          "description": "UUID of the accepted chauffeur/rider"
+        },
+        "acceptedByName": {
+          "type": ["string", "null"],
+          "description": "Name of the accepted chauffeur/rider"
+        },
+        "started": {
+          "type": "boolean",
+          "description": "Whether the trip sequence has initiated"
+        },
+        "passengers": {
+          "type": "array",
+          "description": "List of current pooled passengers sharing this transit ride with split fares"
+        },
+        "amenities": {
+          "type": "array",
+          "description": "List of requested custom amenities currently flagged by the client (water, wifi, etc.)"
+        },
+        "sosActive": {
+          "type": "boolean",
+          "description": "Whether an emergency SOS signal has been triggered for this trip"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last synchronisation timestamp"
+        }
+      },
+      "required": ["status", "isActive", "elapsedTime", "pickup", "destination"]
+    }
+  },
+  "firestore": {
+    "drivers/active_trip": {
+      "schema": "ActiveTrip",
+      "description": "Shared active dispatch trip data accessed by all portal views"
+    },
+    "drivers/{driverId}": {
+      "schema": "Driver",
+      "description": "Collection of all registered live drivers and riders in the system"
+    },
+    "payments/{paymentId}": {
+      "schema": "Payment",
+      "description": "Roster of 10% website policy commission submissions sent to 0887510845"
+    }
+  }
+}

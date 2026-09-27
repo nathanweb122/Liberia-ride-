@@ -1,0 +1,21 @@
+.text-type {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  white-space: pre-wrap;
+}
+
+.text-type__content {
+  display: inline;
+}
+
+.text-type__cursor {
+  display: inline-block;
+  margin-left: 2px;
+  font-weight: 300;
+  user-select: none;
+}
+
+.text-type__cursor--hidden {
+  opacity: 0 !important;
+}

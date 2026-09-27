@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&family=Inter:wght@300;400;500;600;700;800;900&family=Bodoni+Moda:ital,wght@0,400..900;1,400..900&family=Cinzel:wght@400..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-brand-gold: #e9c349;
+  --color-brand-dark: #0c0f0f;
+  
+  /* Obsidian Theme Colors */
+  --color-primary: #ffc174;
+  --color-on-primary: #472a00;
+  --color-primary-container: #f59e0b;
+  --color-on-primary-container: #613b00;
+  --color-primary-fixed: #ffddb8;
+  --color-primary-fixed-dim: #ffb95f;
+  --color-on-primary-fixed: #2a1700;
+  
+  --color-secondary: #c8c6c5;
+  --color-on-secondary: #313030;
+  --color-secondary-container: #4a4949;
+  --color-on-secondary-container: #bab8b7;
+  
+  --color-background: #0e0e0e;
+  --color-on-background: #e2e2e2;
+  
+  --color-surface: #131313;
+  --color-on-surface: #e2e2e2;
+  --color-surface-variant: #353535;
+  --color-on-surface-variant: #d8c3ad;
+  --color-surface-container-lowest: #0e0e0e;
+  --color-surface-container-low: #1b1b1b;
+  --color-surface-container: #1f1f1f;
+  --color-surface-container-high: #2a2a2a;
+  --color-surface-container-highest: #353535;
+  
+  --color-outline: #a08e7a;
+  --color-outline-variant: #534434;
+  
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+  --color-error-container: #93000a;
+  --color-on-error-container: #ffdad6;
+
+  /* Font Families */
+  --font-cinzel: "Cinzel", serif;
+  --font-bodoni: "Bodoni Moda", serif;
+  --font-inter: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-on-background);
+  overflow-x: hidden;
+  font-family: var(--font-inter);
+}
+
+.glass-card {
+  background: rgba(26, 28, 28, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.glass-panel {
+  background: rgba(18, 18, 18, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-card-active {
+  border: 1px solid rgba(233, 195, 73, 0.5);
+  box-shadow: 0 0 20px rgba(233, 195, 73, 0.15);
+}
+
+.service-card {
+  transform: skewX(-10deg);
+  overflow: hidden;
+}
+
+.service-card > * {
+  transform: skewX(10deg);
+}
+
+.text-gradient-slate {
+  background: linear-gradient(to bottom, #ffffff 0%, #9ca3af 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.glass-stroke {
+  border: 1px solid rgba(233, 195, 73, 0.3);
+}
+
+.glow-gold {
+  box-shadow: 0 0 15px rgba(233, 195, 73, 0.4);
+}
+
+.amber-glow {
+  box-shadow: 0 8px 32px rgba(245, 158, 11, 0.12);
+}
+
+.text-glow {
+  text-shadow: 0 0 10px rgba(233, 195, 73, 0.3);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Scrollbar Hide */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Hide Leaflet text panels to protect the dark luxury UI */
+.leaflet-routing-container, .leaflet-routing-error {
+  display: none !important;
+}
+
+/* CSS Dark-Mode Transformation for Pure OpenStreetMap Tiles (No API Keys Required) */
+.dark-tiles .leaflet-tile-container img {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
